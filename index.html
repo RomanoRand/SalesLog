@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Logging App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  input {
+    padding: 10px;
+    font-size: 16px;
+    margin: 5px;
+  }
+  button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 5px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+  .timestamp-list {
+    font-size: 12px;
+    color: gray;
+  }
+</style>
+</head>
+<body>
+
+<h2>Sales Logging App</h2>
+
+<label>Code:</label>
+<input type="text" id="codeInput" placeholder="Enter item code">
+
+<label>Quantity:</label>
+<input type="number" id="quantityInput" placeholder="Quantity">
+
+<label>Price:</label>
+<input type="number" id="priceInput" placeholder="Price">
+
+<button onclick="logSale()">Log Sale</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Specific Kind</th>
+      <th>Code</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Time Logged</th>
+    </tr>
+  </thead>
+  <tbody id="salesTable"></tbody>
+</table>
+
+<script>
+  let salesLog = {};
+
+  // Function to determine the type based on the first letter of the code
+  function getTypeFromCode(code) {
+    if (!code) return "Unknown";
+    const firstLetter = code.charAt(0).toUpperCase();
+    const typeMap = {
+      "G": "Garment Care",
+      "F": "Floor Care",
+      // Add more mappings as needed
+    };
+    return typeMap[firstLetter] || "Other";
+  }
+
+  // Function to determine the specific kind (placeholder, user can extend)
+  function getSpecificKind(code) {
+    if (!code) return "Unknown";
+    const kindMap = {
+      "G01": "Iron",
+      "F01": "Vacuum",
+      // Add more mappings as needed
+    };
+    return kindMap[code] || "Misc";
+  }
+
+  // Function to log a sale
+  function logSale() {
+    const code = document.getElementById("codeInput").value.trim().toUpperCase();
+    const quantity = document.getElementById("quantityInput").value;
+    const price = document.getElementById("priceInput").value;
+
+    if (!code || !quantity || !price) {
+      alert("Please enter all fields!");
+      return;
+    }
+
+    const timestamp = new Date().toLocaleString();
+    
+    if (salesLog[code]) {
+      // If item exists, add a new timestamp
+      salesLog[code].timestamps.push(timestamp);
+      salesLog[code].quantity=parseInt(salesLog[code].quantity) +parseInt( quantity);
+    } else {
+      // If item is new, add it to the log
+      salesLog[code] = {
+        type: getTypeFromCode(code),
+        kind: getSpecificKind(code),
+        code: code,
+        quantity: quantity,
+        price: price,
+        timestamps: [timestamp]
+      };
+    }
+
+    renderTable();
+  }
+
+  // Function to update the table
+  function renderTable() {
+    const tableBody = document.getElementById("salesTable");
+    tableBody.innerHTML = ""; // Clear table
+
+    for (let code in salesLog) {
+      const sale = salesLog[code];
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${sale.type}</td>
+        <td>${sale.kind}</td>
+        <td>${sale.code}</td>
+        <td>${sale.quantity}</td>
+        <td>${sale.price}</td>
+        <td class="timestamp-list">${sale.timestamps.join("<br>")}</td>
+      `;
+
+      tableBody.appendChild(row);
+    }
+  }
+</script>
+
+</body>
+</html>
